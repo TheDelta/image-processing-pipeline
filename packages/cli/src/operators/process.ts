@@ -6,7 +6,7 @@
  */
 
 import { Exception, Pipeline } from "@ipp/common";
-import { executePipeline } from "@ipp/core";
+import { executePipeline, formatExecutionTime, logger } from "@ipp/core";
 import { promises } from "fs";
 import { resolve } from "path";
 import { pathMetadata } from "../lib/metadata";
@@ -24,16 +24,23 @@ export function processImages<T>(
     const { fullPath, initialMeta } = generatePaths(item);
     const buffer = await promises.readFile(fullPath);
 
+    logger.info("Process image %s", fullPath);
+    const hrtime = process.hrtime();
+    initialMeta["hrtime"] = hrtime.join(";");
+
     try {
+      const result = await executePipeline(pipeline, buffer, initialMeta);
+      logger.info(">> Processing of %s took %s", fullPath, formatExecutionTime(hrtime));
       return {
         ...item,
-        result: await executePipeline(pipeline, buffer, initialMeta),
+        result,
       };
     } catch (err) {
-      if (err instanceof Exception) return err;
-      return new Exception(`Unexpected processing error: ${(err as Error).message}`).extend(
-        err as Error
-      );
+      logger.error(err);
+      if (err instanceof Exception) return err.setAdditionalData({ fullPath });
+      return new Exception(`Unexpected processing error: ${(err as Error).message}`)
+        .extend(err as Error)
+        .setAdditionalData({ fullPath });
     }
   });
 }
@@ -41,7 +48,7 @@ export function processImages<T>(
 function generatePaths(item: TaskSource) {
   const relativePath = item.file;
   const fullPath = resolve(item.root, relativePath);
-  const initialMeta = pathMetadata(relativePath);
+  const initialMeta = pathMetadata(relativePath, fullPath);
 
   return {
     fullPath,

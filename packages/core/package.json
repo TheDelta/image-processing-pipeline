@@ -13,7 +13,9 @@
     "@ipp/common": "workspace:*",
     "async-mutex": "^0.3.2",
     "immer": "^9.0.14",
-    "sharp": "^0.30.4"
+    "sharp": "^0.30.4",
+    "pino": "^8.7.0",
+    "pino-pretty": "^9.1.1"
   },
   "devDependencies": {
     "@types/sharp": "^0.30.2"

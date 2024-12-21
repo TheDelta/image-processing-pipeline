@@ -28,6 +28,11 @@ export interface State {
     completed: number;
     failed: number;
   };
+
+  saveing?: {
+    images: [string, string][];
+    exceptions: [string, string][];
+  };
 }
 
 export type StateObservable = Observable<State>;

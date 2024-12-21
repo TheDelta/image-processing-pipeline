@@ -35,11 +35,12 @@ async function* searchPath(path: string): AsyncGenerator<TaskSource | Exception,
   switch (await getFileType(path)) {
     case Type.FILE: {
       const parsedPath = parse(path);
-      if (isImage(parsedPath.base))
+      if (isImage(parsedPath.base)) {
         yield {
           root: parsedPath.dir,
           file: parsedPath.base,
         };
+      }
 
       break;
     }

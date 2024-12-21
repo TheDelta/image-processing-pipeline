@@ -60,7 +60,7 @@ export function saveImages<T>(
 
           await promises.writeFile(outputPath, format.data.buffer);
 
-          savedFormats.push(formatWithNewPath(format, relative(path, outputPath)));
+          savedFormats.push(formatWithNewPath(format, relative(path, outputPath), outputPath));
         } catch (err) {
           errors.push(
             err instanceof Exception
@@ -105,7 +105,7 @@ async function getLastModifiedTime(path: string): Promise<number | null> {
   }
 }
 
-function formatWithNewPath(format: PipelineFormat, path: string): PipelineFormat {
+function formatWithNewPath(format: PipelineFormat, path: string, fullpath: string): PipelineFormat {
   return {
     ...format,
     data: {
@@ -114,7 +114,7 @@ function formatWithNewPath(format: PipelineFormat, path: string): PipelineFormat
         ...format.data.metadata,
         current: {
           ...format.data.metadata.current,
-          ...pathMetadata(path),
+          ...pathMetadata(path, fullpath),
         },
       },
     },

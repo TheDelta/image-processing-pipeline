@@ -5,9 +5,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import { ManifestMappings, Pipeline, PipelineSchema } from "@ipp/common";
+import { ManifestMappings, Pipeline, PipelineResult, PipelineSchema } from "@ipp/common";
 import Ajv, { ErrorObject } from "ajv";
 import chalk from "chalk";
+import { LogLevels } from "@ipp/core";
 import { cosmiconfig } from "cosmiconfig";
 import { CliException, CliExceptionCode } from "../lib/exception";
 import { ExceptionFn } from "../operators/exceptions";
@@ -19,7 +20,7 @@ const MODULE_NAME = "ipp";
 /**
  * Callback function which must return true to include the image for processing
  */
-export type InputFilterCallback = (file: string) => boolean;
+export type InputFilterCallback = (file: string) => boolean | Promise<boolean>;
 
 /**
  * Filter which can exclude images from processing
@@ -36,6 +37,10 @@ export interface Config {
   clean?: boolean;
   flat?: boolean;
   manifest?: ManifestMappings;
+  /** Callback after an image was saved */
+  saveCallback?: (result: PipelineResult) => void | Promise<void>;
+  /** Callback after all images were saved */
+  saveCallbackComplete?: () => void | Promise<void>;
   /** Suppress the output of any image processing errors. */
   suppressErrors?: boolean;
   /**
@@ -44,6 +49,14 @@ export interface Config {
    * exception as its first parameter.
    */
   errorOutput?: string | ExceptionFn;
+  /**
+   * Log level for debugging purpose
+   */
+  logLevel?: LogLevels;
+  /**
+   * Display a summary of all processed images + duration
+   */
+  saveSummary?: boolean;
 }
 
 export async function getConfig(initial: Partial<Config>, path?: string): Promise<Config> {

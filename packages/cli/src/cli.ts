@@ -13,6 +13,7 @@ import { Config } from "./init/config";
 import { createContext } from "./lib/context";
 import { CliException, CliExceptionCode } from "./lib/exception";
 import { InterruptHandler } from "./lib/interrupt";
+import { setupLog } from "@ipp/core";
 import { StateContext, Status } from "./lib/state";
 import { buffer } from "./lib/stream/operators/buffer";
 import { passthrough } from "./lib/stream/operators/passthrough";
@@ -25,6 +26,8 @@ import { processImages } from "./operators/process";
 import { saveImages } from "./operators/save";
 import { searchForImages } from "./operators/search";
 import { DynamicUI, UI, UiInstance as UIInstance } from "./ui";
+import { saveCallback } from "./operators/save_callback";
+import { generateProcessSummary as generateSaveSummary } from "./operators/process_summary";
 
 const MANIFEST_FILE = "manifest.json";
 const BUFFER_SIZE = 8;
@@ -36,6 +39,8 @@ export interface CliContext {
 }
 
 export async function startCli(config: Config, ui: UI = DynamicUI): Promise<void> {
+  setupLog(config.logLevel, config.output);
+
   return withCliContext(
     config.concurrency,
     !!config.manifest,
@@ -95,6 +100,12 @@ function createPipeline(ctx: CliContext, config: Config, manifestFile: string) {
     .pipe(completedCounter(ctx))
     .pipe(buffer(BUFFER_SIZE))
     .pipe(saveImages(config.output, !!config.flat))
+    .pipe(config.saveSummary ? generateSaveSummary(ctx) : passthrough())
+    .pipe(
+      config.saveCallback
+        ? saveCallback(config.saveCallback, config.saveCallbackComplete)
+        : passthrough()
+    )
     .pipe(
       config.manifest
         ? saveManifest(resolve(config.output, manifestFile), config.manifest)

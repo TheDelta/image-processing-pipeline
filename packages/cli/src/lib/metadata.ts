@@ -7,7 +7,7 @@
 
 import { parse } from "path";
 
-export function pathMetadata(path: string): Record<string, string> {
+export function pathMetadata(path: string, fullpath: string): Record<string, string> {
   const parsed = parse(path);
 
   return {
@@ -16,6 +16,7 @@ export function pathMetadata(path: string): Record<string, string> {
     dir: slash(parsed.dir),
     name: parsed.name,
     path: slash(path),
+    fullpath,
   };
 }
 

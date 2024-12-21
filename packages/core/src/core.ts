@@ -23,6 +23,7 @@ import { Mutex } from "async-mutex";
 import { produce } from "immer";
 import sharp from "sharp";
 import { hash } from "./hash";
+import { formatExecutionTime, logger } from "./log";
 import { PIPES } from "./pipes";
 
 interface CoreOptions {
@@ -60,7 +61,9 @@ export async function executePipeline(
   const mutex = parallel ? void 0 : new Mutex();
   const dataObject: DataObject = { buffer: source, metadata };
 
+  const hrtime = process.hrtime();
   const formats = await processPipeline(pipeline, dataObject, mutex);
+  logger.info("~ processPipeline of %s took %s", metadata.source.path, formatExecutionTime(hrtime));
 
   return {
     source: dataObject,
@@ -87,6 +90,7 @@ async function processPipeline(
     }
   }
 
+  logger.info("Execute %d pipeline tasks", groupedFormats.length);
   // Execute all branch/format trees in parallel
   return (await Promise.all(groupedFormats)).flat();
 }
@@ -158,9 +162,19 @@ async function processPipe(
   options?: any,
   mutex?: Mutex
 ): Promise<DataObject | DataObject[]> {
+  logger.info("Process %s on %s", name, data.metadata.source.path);
+
   const release = mutex && (await mutex.acquire());
   try {
+    const hrtime = process.hrtime();
     const result = await pipe(data, options);
+
+    logger.debug(
+      "Exection time of %s took %s for %s",
+      name,
+      formatExecutionTime(hrtime),
+      data.metadata.source.path
+    );
 
     if (!result) return [];
 

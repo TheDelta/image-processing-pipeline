@@ -11,10 +11,12 @@ import { ConvertPipe } from "./convert";
 import { PassthroughPipe } from "./passthrough";
 import { ResizePipe } from "./resize";
 import { RotatePipe } from "./rotate";
+import { SharpPipe } from "./sharp";
 
 export const PIPES: { [index: string]: Pipe<any> } = {
   convert: ConvertPipe,
   passthrough: PassthroughPipe,
   resize: ResizePipe,
   rotate: RotatePipe,
+  sharp: SharpPipe,
 } as const;

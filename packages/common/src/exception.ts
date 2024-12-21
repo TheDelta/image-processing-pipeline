@@ -7,6 +7,12 @@
 export class Exception extends Error {
   public name = "Exception";
 
+  public data(): Readonly<Record<string, string>> {
+    return this.additionalData;
+  }
+
+  private additionalData: Record<string, string> = {};
+
   constructor(message: string) {
     super(message);
   }
@@ -14,6 +20,15 @@ export class Exception extends Error {
   /** Extend another error's stack, returning the instance for chaining */
   extend(stack: Error | string): this {
     this.stack = typeof stack === "string" ? stack : stack.stack;
+    return this;
+  }
+
+  setAdditionalData(kvp: Record<string, string>, extend = true): this {
+    this.additionalData = {
+      ...(extend ? this.additionalData : {}),
+      ...kvp,
+    };
+
     return this;
   }
 }

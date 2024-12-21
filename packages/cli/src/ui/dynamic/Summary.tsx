@@ -52,6 +52,21 @@ const CompletionSummary: React.FC<{ completed: number; failed: number }> = ({
   </Box>
 );
 
+
+const ProcessingSummary: React.FC<{ list: [string, string][], exceptions: [string, string][] }> = ({
+  list,
+  exceptions
+}) => (
+    <Box flexDirection="column">
+      {list.length > 0 && (<Box borderStyle="single" paddingX={1} flexDirection="column">
+      {list.map((entry, i) => (<Box key={i}><Text><Text color="white">{entry[0]}</Text> <Text color="blue" bold>{entry[1]}</Text></Text></Box>))}
+    </Box>)}
+    {exceptions.length > 0 && (<Box borderStyle="single" paddingX={1} flexDirection="column" borderColor="red">
+      {exceptions.map((entry, i) => (<Box key={i}><Text><Text color="white" bold>{entry[0]}</Text> <Text color="yellow">{entry[1]}</Text></Text></Box>))}
+    </Box>)}
+  </Box>
+);
+
 const Notices: React.FC<{ manifest: boolean; failed: boolean }> = ({ manifest, failed }) => (
   <Box paddingLeft={4} width={TERMINAL_WIDTH * 1.5} flexDirection="column">
     {manifest && (
@@ -85,6 +100,7 @@ export const Summary: React.FC<{ state: State }> = ({ state }) => {
   return (
     <>
       <CompletionSummary completed={state.images.completed} failed={state.images.failed} />
+      { state.saveing && <ProcessingSummary list={state.saveing.images} exceptions={state.saveing.exceptions} /> }
       <Notices manifest={!!state.manifest} failed={!!state.images.failed} />
     </>
   );

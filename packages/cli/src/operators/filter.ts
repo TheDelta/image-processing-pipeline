@@ -12,7 +12,7 @@ import { filter } from "../lib/stream/operators/filter";
 import { isTaskSource } from "./types";
 
 export function filterImages<T>(inputFilter?: InputFilter): Operator<T, T> {
-  return filter((item) => {
+  return filter(async (item) => {
     if (!inputFilter || !isTaskSource(item)) {
       return true;
     }
@@ -23,7 +23,7 @@ export function filterImages<T>(inputFilter?: InputFilter): Operator<T, T> {
 
     const file = resolve(item.root, item.file);
     for (const f of inputFilter) {
-      if (typeof f === "function" ? !f(file) : !f.test(file)) {
+      if (typeof f === "function" ? !(await f(file)) : !f.test(file)) {
         return false;
       }
     }
